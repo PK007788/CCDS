@@ -46,31 +46,26 @@ struct DecisionContext {
     double confidence_gap;
 };
 
-// Build a highly constrained prompt so the LLM cannot hallucinate
+// Build a simple prompt that tiny models can handle
 inline std::string buildExplanationPrompt(const DecisionContext& ctx) {
-    std::ostringstream ss;
-    ss << "You are a product advisor. Based ONLY on the facts below, "
-       << "write a brief 2-3 sentence explanation of why this product is the best choice. "
-       << "Do NOT invent facts. Do NOT mention products not listed.\n\n";
-    ss << "CATEGORY: " << ctx.category_name << "\n";
-    ss << "USER NEEDS: " << ctx.constraints_summary << "\n";
-    ss << "BEST PRODUCT: " << ctx.best.product.name << "\n";
-    ss << "COMPOSITE SCORE: " << std::fixed << std::setprecision(3) << ctx.best.total_score << " / 1.000\n";
-    ss << "CONFIDENCE: " << ctx.confidence << "\n";
-    ss << "SCORE BREAKDOWN:\n";
-
+    // Find the top contributing attribute
+    std::string top_attr;
+    double top_contrib = 0;
     for (auto& b : ctx.best.breakdown) {
-        ss << "  - " << b.display << ": normalized=" << std::fixed << std::setprecision(2)
-           << b.normalized << ", weight=" << (int)(b.weight * 100) << "%, contribution="
-           << std::setprecision(3) << b.contribution << "\n";
+        if (b.contribution > top_contrib) {
+            top_contrib = b.contribution;
+            top_attr = b.display;
+        }
     }
 
-    if (ctx.top_results.size() > 1) {
-        ss << "\nRUNNER UP: " << ctx.top_results[1].product.name
-           << " (score: " << std::fixed << std::setprecision(3) << ctx.top_results[1].total_score << ")\n";
-    }
-
-    ss << "\nRespond in 2-3 sentences only. Be specific about attribute values.\n";
+    std::ostringstream ss;
+    ss << "Why is " << ctx.best.product.name
+       << " the best " << ctx.category_name << "? "
+       << "It scored " << std::fixed << std::setprecision(3) << ctx.best.total_score
+       << " out of 1.0. Its best feature is " << top_attr << ". "
+       << "The user needs: " << ctx.constraints_summary << ". "
+       << "Explain in 2 sentences why this is a good choice."
+       << "\nRespond in 2-3 sentences only.\n";
     return ss.str();
 }
 
