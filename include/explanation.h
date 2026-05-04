@@ -46,7 +46,7 @@ struct DecisionContext {
     double confidence_gap;
 };
 
-// Build a simple prompt that tiny models can handle
+// Build a simple completion-style prompt that tiny models can continue
 inline std::string buildExplanationPrompt(const DecisionContext& ctx) {
     // Find the top contributing attribute
     std::string top_attr;
@@ -59,13 +59,11 @@ inline std::string buildExplanationPrompt(const DecisionContext& ctx) {
     }
 
     std::ostringstream ss;
-    ss << "Why is " << ctx.best.product.name
-       << " the best " << ctx.category_name << "? "
-       << "It scored " << std::fixed << std::setprecision(3) << ctx.best.total_score
-       << " out of 1.0. Its best feature is " << top_attr << ". "
-       << "The user needs: " << ctx.constraints_summary << ". "
-       << "Explain in 2 sentences why this is a good choice."
-       << "\nRespond in 2-3 sentences only.\n";
+    ss << ctx.best.product.name << " is the best " << ctx.category_name
+       << " for a user who needs " << ctx.constraints_summary
+       << ". It scored " << std::fixed << std::setprecision(2) << ctx.best.total_score
+       << " out of 1.0 and its strongest feature is " << top_attr
+       << ". This product is recommended because";
     return ss.str();
 }
 
@@ -245,23 +243,15 @@ inline std::string generateExplanation(const DecisionContext& ctx,
     // for (auto& c : debug_preview) { if (c == '\n') c = ' '; }
     // std::cout << "   [DEBUG] Raw output (" << raw_output.size() << " bytes): " << debug_preview << "...\n";
 
-    // The LLM may echo the prompt before the generated answer.
-    // The prompt always ends with "Respond in 2-3 sentences only."
-    // Find that marker and strip everything up to and including that line.
-    size_t prompt_end = llm_response.find("Respond in 2-3 sentences only.");
-    if (prompt_end != std::string::npos) {
-        // Move past the marker line
-        size_t line_end = llm_response.find('\n', prompt_end);
-        if (line_end != std::string::npos) {
-            llm_response = llm_response.substr(line_end + 1);
-        } else {
-            llm_response = ""; // The entire output was just the prompt
-        }
-    }
-    // Fallback: try exact prefix match
-    else if (llm_response.find(prompt) == 0) {
-        llm_response = llm_response.substr(prompt.size());
-    }
+    // The prompt is completion-style: "[product] is the best [category]... because"
+    // The LLM echoes the prompt then continues it. The full text reads naturally
+    // as one coherent explanation, so we keep the echoed prompt as part of the output.
+    // We just need to strip the exact prompt prefix if it appears, then prepend it back
+    // in a clean way — OR just keep everything since it reads well.
+    
+    // If the LLM echoed the prompt, the output = prompt + continuation.
+    // The whole thing reads as: "[product] is the best... because [LLM continuation]"
+    // That's actually a perfect explanation! Just clean up trailing junk.
 
     size_t leading = llm_response.find_first_not_of(" \t\n\r");
     if (leading != std::string::npos) {
@@ -300,8 +290,9 @@ inline std::string generateExplanation(const DecisionContext& ctx,
     }
     llm_response = llm_response.substr(start, end - start + 1);
 
-    if (llm_response == prompt || llm_response.find("You are a product advisor.") == 0 ||
-        llm_response.find("Respond in 2-3 sentences only.") == 0) {
+    // Check that TinyLlama actually added something beyond just echoing the prompt
+    // The prompt is ~200 chars, so if the response is barely longer, it didn't generate
+    if (llm_response.size() <= prompt.size() + 20) {
         return templateExplanation(ctx);
     }
 
