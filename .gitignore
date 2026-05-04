@@ -1,1 +1,6 @@
 models
+temp/
+ccds_prompt_*.tmp
+ccds_output_*.tmp
+ccds_llm_output.tmp
+test_prompt.tmp

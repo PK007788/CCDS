@@ -36,7 +36,7 @@ int main() {
     // -- Paths (relative to executable working directory) --
     const std::string CONFIG_DIR = "config/categories";
     const std::string DATA_DIR   = "data";
-    const std::string LLAMA_CLI  = "C:\\Users\\prajn\\llama.cpp\\build\\bin\\Release\\llama-cli.exe";
+    const std::string LLAMA_CLI  = "C:\\Users\\prajn\\llama.cpp\\build\\bin\\Release\\llama-completion.exe";
     const std::string MODEL_PATH = "models/tinyllama.gguf";
 
     // -- Step 1: Print banner --

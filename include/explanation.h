@@ -5,8 +5,36 @@
 #include <iomanip>
 #include <cstdlib>
 #include <cstdio>
+#include <stdio.h>
+#include <ctime>
+#include <vector>
+#include <cerrno>
+#ifdef _WIN32
+#include <windows.h>
+#include <direct.h>
+#endif
 #include "scoring.h"
 #include "category.h"
+
+inline std::string scratchDirectory() {
+    return "temp";
+}
+
+inline std::string scratchFile(const std::string& name) {
+    return scratchDirectory() + "/" + name;
+}
+
+inline void ensureScratchDirectory() {
+#ifdef _WIN32
+    if (_mkdir(scratchDirectory().c_str()) != 0 && errno != EEXIST) {
+        return;
+    }
+#else
+    if (mkdir(scratchDirectory().c_str(), 0755) != 0 && errno != EEXIST) {
+        return;
+    }
+#endif
+}
 
 // Context passed to the explanation engine — everything the LLM needs
 struct DecisionContext {
@@ -81,58 +109,159 @@ inline std::string generateExplanation(const DecisionContext& ctx,
     }
 
     std::string prompt = buildExplanationPrompt(ctx);
+    ensureScratchDirectory();
 
-    // Escape quotes in the prompt for command line
-    std::string escaped_prompt;
-    for (char c : prompt) {
-        if (c == '"') escaped_prompt += "\\\"";
-        else if (c == '\n') escaped_prompt += " ";
-        else escaped_prompt += c;
+    // Use unique temp filenames to avoid conflicts with locked files from previous runs
+    std::string suffix = std::to_string(std::clock());
+    std::string prompt_file = scratchFile("ccds_prompt_" + suffix + ".tmp");
+    std::string output_file = scratchFile("ccds_output_" + suffix + ".tmp");
+    // Also try to clean up common stale files
+    std::remove(scratchFile("ccds_llm_prompt.tmp").c_str());
+    std::remove(scratchFile("ccds_llm_output.tmp").c_str());
+
+    // Write prompt to a temp file to avoid command-line quoting issues
+    {
+        std::ofstream pf(prompt_file);
+        if (!pf.is_open()) return templateExplanation(ctx);
+        pf << prompt;
+        pf.close();
     }
 
-    // Build command — redirect output to a temp file for capture
-    // Wrap entire command so both stdout and stderr are handled cleanly
-    std::string temp_file = "ccds_llm_output.tmp";
-    std::string command = "\"" + llama_cli_path + "\" -m \"" + model_path
-                        + "\" --no-display-prompt"
+        std::string cmd = "\"" + llama_cli_path + "\""
+                        + " -m \"" + model_path + "\""
+                        + " -st"
                         + " -n 150"
-                        + " -p \"" + escaped_prompt + "\""
-                        + " > " + temp_file + " 2>nul";
+                        + " -f " + prompt_file;
 
-    // Suppress any shell-level errors by redirecting the whole command
-    int ret = system(("(" + command + ") 2>nul").c_str());
+        #ifdef _WIN32
+        // Use CreateProcess with pipes to capture stdout/stderr on Windows
+        std::cout << "   [DEBUG] Running LLM command (CreateProcess): " << cmd << "\n";
 
-    // Check if temp file was even created
-    std::ifstream f(temp_file);
-    if (ret != 0 || !f.is_open()) {
-        // Clean up if file exists
+        SECURITY_ATTRIBUTES sa;
+        sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+        sa.bInheritHandle = TRUE;
+        sa.lpSecurityDescriptor = NULL;
+
+        HANDLE hRead = NULL, hWrite = NULL;
+        if (!CreatePipe(&hRead, &hWrite, &sa, 0)) {
+            std::remove(prompt_file.c_str());
+            return templateExplanation(ctx);
+        }
+        // Ensure the read handle is not inherited
+        SetHandleInformation(hRead, HANDLE_FLAG_INHERIT, 0);
+
+        STARTUPINFOA si;
+        PROCESS_INFORMATION pi;
+        ZeroMemory(&si, sizeof(si));
+        si.cb = sizeof(si);
+        si.dwFlags |= STARTF_USESTDHANDLES;
+        si.hStdOutput = hWrite;
+        si.hStdError = hWrite;
+        si.hStdInput = NULL;
+
+        ZeroMemory(&pi, sizeof(pi));
+
+        // Create mutable command line
+        std::vector<char> cmdline(cmd.begin(), cmd.end());
+        cmdline.push_back('\0');
+
+        BOOL ok = CreateProcessA(NULL, cmdline.data(), NULL, NULL, TRUE,
+                                 CREATE_NO_WINDOW, NULL, NULL, &si, &pi);
+        // Close the write end in the parent so we can read EOF
+        CloseHandle(hWrite);
+
+        if (!ok) {
+            CloseHandle(hRead);
+            std::remove(prompt_file.c_str());
+            return templateExplanation(ctx);
+        }
+
+        // Read output from child
+        std::string raw_output;
+        const DWORD bufSize = 4096;
+        char buffer[bufSize];
+        DWORD readBytes = 0;
+        while (ReadFile(hRead, buffer, bufSize, &readBytes, NULL) && readBytes > 0) {
+            raw_output.append(buffer, buffer + readBytes);
+        }
+
+        // Wait for process to exit and get exit code
+        WaitForSingleObject(pi.hProcess, INFINITE);
+        DWORD exitCode = 0;
+        GetExitCodeProcess(pi.hProcess, &exitCode);
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+        CloseHandle(hRead);
+
+        std::cout << "   [DEBUG] LLM exit code: " << exitCode << "\n";
+
+        // Clean up prompt file
+        std::remove(prompt_file.c_str());
+
+        if (raw_output.empty()) {
+            return templateExplanation(ctx);
+        }
+
+        #else
+        // Non-Windows: fall back to system() with redirected output file
+        std::string full_cmd = cmd + " > " + output_file + " 2>&1";
+        std::cout << "   [DEBUG] Running LLM command: " << full_cmd << "\n";
+        int ret = system(full_cmd.c_str());
+        std::cout << "   [DEBUG] LLM command exit code: " << ret << "\n";
+
+        // Clean up prompt file immediately
+        std::remove(prompt_file.c_str());
+
+        // Read redirected output file
+        std::ifstream f(output_file);
+        if (!f.is_open()) {
+            std::remove(output_file.c_str());
+            return templateExplanation(ctx);
+        }
+
+        std::string raw_output((std::istreambuf_iterator<char>(f)),
+                                std::istreambuf_iterator<char>());
         f.close();
-        std::remove(temp_file.c_str());
+        std::remove(output_file.c_str());
+
+        if (raw_output.empty()) {
+            return templateExplanation(ctx);
+        }
+        #endif
+    // With --simple-io, output is clean: just the LLM response text
+    // followed by "> " interactive prompts and possible junk.
+    // Strategy: take text up to the first "\n> " or "<|" marker.
+    std::string llm_response = raw_output;
+
+    // Cut off at first interactive prompt marker "\n> "
+    size_t cut = llm_response.find("\n> ");
+    if (cut != std::string::npos) {
+        llm_response = llm_response.substr(0, cut);
+    }
+
+    // Cut off at any special token markers like <|user|>, <|end|>, etc.
+    cut = llm_response.find("<|");
+    if (cut != std::string::npos) {
+        llm_response = llm_response.substr(0, cut);
+    }
+
+    // Cut off at stats line
+    cut = llm_response.find("[ Prompt:");
+    if (cut != std::string::npos) {
+        llm_response = llm_response.substr(0, cut);
+    }
+
+    // Trim whitespace and trailing '>'
+    size_t start = llm_response.find_first_not_of(" \t\n\r");
+    size_t end = llm_response.find_last_not_of(" \t\n\r>");
+    if (start == std::string::npos || end == std::string::npos || end < start) {
+        return templateExplanation(ctx);
+    }
+    llm_response = llm_response.substr(start, end - start + 1);
+
+    if (llm_response.empty() || llm_response.size() < 10) {
         return templateExplanation(ctx);
     }
 
-    // Read the LLM output
-    std::string llm_output((std::istreambuf_iterator<char>(f)),
-                            std::istreambuf_iterator<char>());
-    f.close();
-
-    // Clean up temp file
-    std::remove(temp_file.c_str());
-
-    // Validate: non-empty, reasonable length
-    if (llm_output.empty() || llm_output.size() > 1000) {
-        return templateExplanation(ctx);
-    }
-
-    // Trim whitespace
-    size_t start = llm_output.find_first_not_of(" \t\n\r");
-    size_t end = llm_output.find_last_not_of(" \t\n\r");
-    if (start == std::string::npos) return templateExplanation(ctx);
-    llm_output = llm_output.substr(start, end - start + 1);
-
-    if (llm_output.empty()) {
-        return templateExplanation(ctx);
-    }
-
-    return llm_output;
+    return llm_response;
 }
