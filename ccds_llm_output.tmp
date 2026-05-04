@@ -1,0 +1,31 @@
+
+Loading model... 
+
+
+▄▄ ▄▄
+██ ██
+██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄
+██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██
+██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀
+                                    ██    ██
+                                    ▀▀    ▀▀
+
+build      : b9024-e77056f9b
+model      : tinyllama.gguf
+modalities : text
+
+available commands:
+  /exit or Ctrl+C     stop or exit
+  /regen              regenerate the last response
+  /clear              clear the chat history
+  /read <file>        add a text file
+  /glob <pattern>     add text files using globbing pattern
+
+[1m[32m
+> You are a product advisor. Based ONLY on the facts below, write a brief 2-3 sentence explanation of why this product is the best choice. Do NOT invent facts. Do NOT mention products not listed.  CATEGORY: Laptop / Desktop RAM USER NEEDS: type == DDR4, price <= 6000 BEST PRODUCT: Corsair Vengeance LPX 8GB DDR4 3200MHz COMPOSITE SCORE: 0.623 / 1.000 CONFIDENCE: LOW SCORE BREAKDOWN:   - Size (GB): normalized=0.07, weight=25%, contribution=0.017   - Speed (MHz): normalized=0.33, weight=16%, contribu ... (truncated)
+[0m
+The Corsair Vengeance LPX 8GB DDR4 3200MHz is the best product for the category of Laptop/Desktop RAM as per the provided facts. The product has a size of normalized 0.07 GB, weight of 25% (2.5 grams), and a contribution of 0.017 GB to its score. It also has a price of normalized 0.33 GB, weight of 16%, and a contribution of 0.056 GB to its score. Additionally, the product is a high-end branded product and has a brand tier of 1.00. Overall, the Corsair
+[35m
+[ Prompt: 87.2 t/s | Generation: 30.1 t/s ]
+[0m[1m[32m
+> 

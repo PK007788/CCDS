@@ -91,24 +91,27 @@ inline std::string generateExplanation(const DecisionContext& ctx,
     }
 
     // Build command — redirect output to a temp file for capture
+    // Wrap entire command so both stdout and stderr are handled cleanly
     std::string temp_file = "ccds_llm_output.tmp";
     std::string command = "\"" + llama_cli_path + "\" -m \"" + model_path
                         + "\" --no-display-prompt"
                         + " -n 150"
                         + " -p \"" + escaped_prompt + "\""
-                        + " 2>nul > " + temp_file;
+                        + " > " + temp_file + " 2>nul";
 
-    int ret = system(command.c_str());
+    // Suppress any shell-level errors by redirecting the whole command
+    int ret = system(("(" + command + ") 2>nul").c_str());
 
-    if (ret != 0) {
+    // Check if temp file was even created
+    std::ifstream f(temp_file);
+    if (ret != 0 || !f.is_open()) {
+        // Clean up if file exists
+        f.close();
+        std::remove(temp_file.c_str());
         return templateExplanation(ctx);
     }
 
     // Read the LLM output
-    std::ifstream f(temp_file);
-    if (!f.is_open()) {
-        return templateExplanation(ctx);
-    }
     std::string llm_output((std::istreambuf_iterator<char>(f)),
                             std::istreambuf_iterator<char>());
     f.close();
