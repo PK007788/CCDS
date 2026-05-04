@@ -129,13 +129,15 @@ inline std::string generateExplanation(const DecisionContext& ctx,
 
         std::string cmd = "\"" + llama_cli_path + "\""
                         + " -m \"" + model_path + "\""
+                        + " --simple-io"
+                        + " -no-cnv"
                         + " -st"
                         + " -n 150"
                         + " -f " + prompt_file;
 
         #ifdef _WIN32
         // Use CreateProcess with pipes to capture stdout/stderr on Windows
-        std::cout << "   [DEBUG] Running LLM command (CreateProcess): " << cmd << "\n";
+        // std::cout << "   [DEBUG] Running LLM command (CreateProcess): " << cmd << "\n";
 
         SECURITY_ATTRIBUTES sa;
         sa.nLength = sizeof(SECURITY_ATTRIBUTES);
@@ -150,13 +152,22 @@ inline std::string generateExplanation(const DecisionContext& ctx,
         // Ensure the read handle is not inherited
         SetHandleInformation(hRead, HANDLE_FLAG_INHERIT, 0);
 
+        HANDLE hNull = CreateFileA("NUL", GENERIC_WRITE, FILE_SHARE_WRITE, &sa,
+                                   OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (hNull == INVALID_HANDLE_VALUE) {
+            CloseHandle(hRead);
+            CloseHandle(hWrite);
+            std::remove(prompt_file.c_str());
+            return templateExplanation(ctx);
+        }
+
         STARTUPINFOA si;
         PROCESS_INFORMATION pi;
         ZeroMemory(&si, sizeof(si));
         si.cb = sizeof(si);
         si.dwFlags |= STARTF_USESTDHANDLES;
         si.hStdOutput = hWrite;
-        si.hStdError = hWrite;
+        si.hStdError = hNull;
         si.hStdInput = NULL;
 
         ZeroMemory(&pi, sizeof(pi));
@@ -169,6 +180,7 @@ inline std::string generateExplanation(const DecisionContext& ctx,
                                  CREATE_NO_WINDOW, NULL, NULL, &si, &pi);
         // Close the write end in the parent so we can read EOF
         CloseHandle(hWrite);
+        CloseHandle(hNull);
 
         if (!ok) {
             CloseHandle(hRead);
@@ -193,7 +205,7 @@ inline std::string generateExplanation(const DecisionContext& ctx,
         CloseHandle(pi.hThread);
         CloseHandle(hRead);
 
-        std::cout << "   [DEBUG] LLM exit code: " << exitCode << "\n";
+        // std::cout << "   [DEBUG] LLM exit code: " << exitCode << "\n";
 
         // Clean up prompt file
         std::remove(prompt_file.c_str());
@@ -230,11 +242,45 @@ inline std::string generateExplanation(const DecisionContext& ctx,
         #endif
     // With --simple-io, output is clean: just the LLM response text
     // followed by "> " interactive prompts and possible junk.
-    // Strategy: take text up to the first "\n> " or "<|" marker.
     std::string llm_response = raw_output;
+    size_t cut = std::string::npos;
+
+    // Debug output (uncomment for troubleshooting):
+    // std::string debug_preview = raw_output.substr(0, 200);
+    // for (auto& c : debug_preview) { if (c == '\n') c = ' '; }
+    // std::cout << "   [DEBUG] Raw output (" << raw_output.size() << " bytes): " << debug_preview << "...\n";
+
+    // The LLM may echo the prompt before the generated answer.
+    // The prompt always ends with "Respond in 2-3 sentences only."
+    // Find that marker and strip everything up to and including that line.
+    size_t prompt_end = llm_response.find("Respond in 2-3 sentences only.");
+    if (prompt_end != std::string::npos) {
+        // Move past the marker line
+        size_t line_end = llm_response.find('\n', prompt_end);
+        if (line_end != std::string::npos) {
+            llm_response = llm_response.substr(line_end + 1);
+        } else {
+            llm_response = ""; // The entire output was just the prompt
+        }
+    }
+    // Fallback: try exact prefix match
+    else if (llm_response.find(prompt) == 0) {
+        llm_response = llm_response.substr(prompt.size());
+    }
+
+    size_t leading = llm_response.find_first_not_of(" \t\n\r");
+    if (leading != std::string::npos) {
+        llm_response = llm_response.substr(leading);
+    }
+
+    // Drop a trailing end-of-text marker if present.
+    cut = llm_response.find("[end of text]");
+    if (cut != std::string::npos) {
+        llm_response = llm_response.substr(0, cut);
+    }
 
     // Cut off at first interactive prompt marker "\n> "
-    size_t cut = llm_response.find("\n> ");
+    cut = llm_response.find("\n> ");
     if (cut != std::string::npos) {
         llm_response = llm_response.substr(0, cut);
     }
@@ -258,6 +304,11 @@ inline std::string generateExplanation(const DecisionContext& ctx,
         return templateExplanation(ctx);
     }
     llm_response = llm_response.substr(start, end - start + 1);
+
+    if (llm_response == prompt || llm_response.find("You are a product advisor.") == 0 ||
+        llm_response.find("Respond in 2-3 sentences only.") == 0) {
+        return templateExplanation(ctx);
+    }
 
     if (llm_response.empty() || llm_response.size() < 10) {
         return templateExplanation(ctx);
