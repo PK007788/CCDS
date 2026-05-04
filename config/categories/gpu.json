@@ -1,0 +1,51 @@
+{
+  "category": "gpu",
+  "display_name": "Graphics Card (GPU)",
+  "attributes": [
+    {
+      "name": "vram_gb",
+      "display": "VRAM (GB)",
+      "type": "numeric",
+      "direction": "higher_better",
+      "default_weight": 0.30,
+      "range": [4, 24]
+    },
+    {
+      "name": "benchmark_score",
+      "display": "Benchmark Score",
+      "type": "numeric",
+      "direction": "higher_better",
+      "default_weight": 0.30,
+      "range": [5000, 30000]
+    },
+    {
+      "name": "tdp_watts",
+      "display": "Power Draw (W)",
+      "type": "numeric",
+      "direction": "lower_better",
+      "default_weight": 0.10,
+      "range": [75, 350]
+    },
+    {
+      "name": "price",
+      "display": "Price (INR)",
+      "type": "numeric",
+      "direction": "lower_better",
+      "default_weight": 0.25,
+      "range": [10000, 100000]
+    },
+    {
+      "name": "brand_tier",
+      "display": "Brand Tier",
+      "type": "ordinal",
+      "direction": "higher_better",
+      "default_weight": 0.05,
+      "levels": ["budget", "mid", "premium"]
+    }
+  ],
+  "constraints": [
+    { "attribute": "brand", "prompt": "Enter preferred brand (NVIDIA/AMD/any)", "filter_op": "==", "input_type": "string" },
+    { "attribute": "price", "prompt": "Enter maximum budget (INR)", "filter_op": "<=", "input_type": "numeric" },
+    { "attribute": "vram_gb", "prompt": "Enter minimum VRAM needed (GB, or 0 for any)", "filter_op": ">=", "input_type": "numeric" }
+  ]
+}

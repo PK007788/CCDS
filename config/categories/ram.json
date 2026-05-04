@@ -1,0 +1,42 @@
+{
+  "category": "ram",
+  "display_name": "Laptop / Desktop RAM",
+  "attributes": [
+    {
+      "name": "size_gb",
+      "display": "Size (GB)",
+      "type": "numeric",
+      "direction": "higher_better",
+      "default_weight": 0.40,
+      "range": [4, 64]
+    },
+    {
+      "name": "speed_mhz",
+      "display": "Speed (MHz)",
+      "type": "numeric",
+      "direction": "higher_better",
+      "default_weight": 0.25,
+      "range": [1600, 6400]
+    },
+    {
+      "name": "price",
+      "display": "Price (INR)",
+      "type": "numeric",
+      "direction": "lower_better",
+      "default_weight": 0.30,
+      "range": [1000, 15000]
+    },
+    {
+      "name": "brand_tier",
+      "display": "Brand Tier",
+      "type": "ordinal",
+      "direction": "higher_better",
+      "default_weight": 0.05,
+      "levels": ["budget", "mid", "premium"]
+    }
+  ],
+  "constraints": [
+    { "attribute": "type", "prompt": "Enter RAM type (DDR3/DDR4/DDR5)", "filter_op": "==", "input_type": "string" },
+    { "attribute": "price", "prompt": "Enter maximum budget (INR)", "filter_op": "<=", "input_type": "numeric" }
+  ]
+}

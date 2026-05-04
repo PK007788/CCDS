@@ -1,0 +1,56 @@
+{
+  "category": "gpu",
+  "last_updated": "2026-05-04",
+  "products": [
+    {
+      "id": "gpu_001",
+      "name": "NVIDIA GeForce RTX 4060 8GB",
+      "attributes": { "brand": "NVIDIA", "vram_gb": 8, "benchmark_score": 12500, "tdp_watts": 115, "price": 30000, "brand_tier": "premium" }
+    },
+    {
+      "id": "gpu_002",
+      "name": "NVIDIA GeForce RTX 4070 12GB",
+      "attributes": { "brand": "NVIDIA", "vram_gb": 12, "benchmark_score": 17800, "tdp_watts": 200, "price": 50000, "brand_tier": "premium" }
+    },
+    {
+      "id": "gpu_003",
+      "name": "AMD Radeon RX 7600 8GB",
+      "attributes": { "brand": "AMD", "vram_gb": 8, "benchmark_score": 11200, "tdp_watts": 165, "price": 27000, "brand_tier": "mid" }
+    },
+    {
+      "id": "gpu_004",
+      "name": "NVIDIA GeForce RTX 3060 12GB",
+      "attributes": { "brand": "NVIDIA", "vram_gb": 12, "benchmark_score": 10500, "tdp_watts": 170, "price": 25000, "brand_tier": "premium" }
+    },
+    {
+      "id": "gpu_005",
+      "name": "AMD Radeon RX 6700 XT 12GB",
+      "attributes": { "brand": "AMD", "vram_gb": 12, "benchmark_score": 12000, "tdp_watts": 230, "price": 32000, "brand_tier": "mid" }
+    },
+    {
+      "id": "gpu_006",
+      "name": "NVIDIA GeForce RTX 4080 16GB",
+      "attributes": { "brand": "NVIDIA", "vram_gb": 16, "benchmark_score": 24500, "tdp_watts": 320, "price": 85000, "brand_tier": "premium" }
+    },
+    {
+      "id": "gpu_007",
+      "name": "AMD Radeon RX 7900 XT 20GB",
+      "attributes": { "brand": "AMD", "vram_gb": 20, "benchmark_score": 22000, "tdp_watts": 300, "price": 72000, "brand_tier": "premium" }
+    },
+    {
+      "id": "gpu_008",
+      "name": "NVIDIA GeForce GTX 1660 Super 6GB",
+      "attributes": { "brand": "NVIDIA", "vram_gb": 6, "benchmark_score": 6500, "tdp_watts": 125, "price": 15000, "brand_tier": "mid" }
+    },
+    {
+      "id": "gpu_009",
+      "name": "AMD Radeon RX 6600 8GB",
+      "attributes": { "brand": "AMD", "vram_gb": 8, "benchmark_score": 9200, "tdp_watts": 132, "price": 20000, "brand_tier": "mid" }
+    },
+    {
+      "id": "gpu_010",
+      "name": "NVIDIA GeForce RTX 3050 8GB",
+      "attributes": { "brand": "NVIDIA", "vram_gb": 8, "benchmark_score": 7800, "tdp_watts": 130, "price": 18000, "brand_tier": "mid" }
+    }
+  ]
+}

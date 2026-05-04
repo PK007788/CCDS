@@ -1,0 +1,56 @@
+{
+  "category": "ram",
+  "last_updated": "2026-05-04",
+  "products": [
+    {
+      "id": "ram_001",
+      "name": "Corsair Vengeance LPX 8GB DDR4 3200MHz",
+      "attributes": { "type": "DDR4", "size_gb": 8, "speed_mhz": 3200, "price": 2100, "brand_tier": "premium" }
+    },
+    {
+      "id": "ram_002",
+      "name": "Kingston Fury Beast 16GB DDR4 3200MHz",
+      "attributes": { "type": "DDR4", "size_gb": 16, "speed_mhz": 3200, "price": 3500, "brand_tier": "premium" }
+    },
+    {
+      "id": "ram_003",
+      "name": "Crucial Ballistix 8GB DDR4 2666MHz",
+      "attributes": { "type": "DDR4", "size_gb": 8, "speed_mhz": 2666, "price": 1800, "brand_tier": "mid" }
+    },
+    {
+      "id": "ram_004",
+      "name": "G.Skill Ripjaws V 16GB DDR4 3600MHz",
+      "attributes": { "type": "DDR4", "size_gb": 16, "speed_mhz": 3600, "price": 4200, "brand_tier": "premium" }
+    },
+    {
+      "id": "ram_005",
+      "name": "Corsair Vengeance 32GB DDR5 5600MHz",
+      "attributes": { "type": "DDR5", "size_gb": 32, "speed_mhz": 5600, "price": 8500, "brand_tier": "premium" }
+    },
+    {
+      "id": "ram_006",
+      "name": "Kingston Fury Beast 16GB DDR5 4800MHz",
+      "attributes": { "type": "DDR5", "size_gb": 16, "speed_mhz": 4800, "price": 5500, "brand_tier": "premium" }
+    },
+    {
+      "id": "ram_007",
+      "name": "Crucial 8GB DDR3 1600MHz",
+      "attributes": { "type": "DDR3", "size_gb": 8, "speed_mhz": 1600, "price": 1500, "brand_tier": "mid" }
+    },
+    {
+      "id": "ram_008",
+      "name": "Kingston ValueRAM 4GB DDR4 2400MHz",
+      "attributes": { "type": "DDR4", "size_gb": 4, "speed_mhz": 2400, "price": 1100, "brand_tier": "budget" }
+    },
+    {
+      "id": "ram_009",
+      "name": "ADATA XPG Gammix D30 16GB DDR4 3000MHz",
+      "attributes": { "type": "DDR4", "size_gb": 16, "speed_mhz": 3000, "price": 3200, "brand_tier": "mid" }
+    },
+    {
+      "id": "ram_010",
+      "name": "G.Skill Trident Z5 32GB DDR5 6000MHz",
+      "attributes": { "type": "DDR5", "size_gb": 32, "speed_mhz": 6000, "price": 11000, "brand_tier": "premium" }
+    }
+  ]
+}

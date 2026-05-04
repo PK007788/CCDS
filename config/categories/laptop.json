@@ -1,0 +1,67 @@
+{
+  "category": "laptop",
+  "display_name": "Laptop",
+  "attributes": [
+    {
+      "name": "ram_gb",
+      "display": "RAM (GB)",
+      "type": "numeric",
+      "direction": "higher_better",
+      "default_weight": 0.20,
+      "range": [4, 32]
+    },
+    {
+      "name": "storage_gb",
+      "display": "Storage (GB)",
+      "type": "numeric",
+      "direction": "higher_better",
+      "default_weight": 0.10,
+      "range": [128, 2048]
+    },
+    {
+      "name": "display_inches",
+      "display": "Display (inches)",
+      "type": "numeric",
+      "direction": "higher_better",
+      "default_weight": 0.10,
+      "range": [13.0, 17.3]
+    },
+    {
+      "name": "battery_hours",
+      "display": "Battery Life (hrs)",
+      "type": "numeric",
+      "direction": "higher_better",
+      "default_weight": 0.10,
+      "range": [3, 20]
+    },
+    {
+      "name": "weight_kg",
+      "display": "Weight (kg)",
+      "type": "numeric",
+      "direction": "lower_better",
+      "default_weight": 0.10,
+      "range": [0.9, 3.0]
+    },
+    {
+      "name": "benchmark_score",
+      "display": "Performance Score",
+      "type": "numeric",
+      "direction": "higher_better",
+      "default_weight": 0.20,
+      "range": [3000, 20000]
+    },
+    {
+      "name": "price",
+      "display": "Price (INR)",
+      "type": "numeric",
+      "direction": "lower_better",
+      "default_weight": 0.20,
+      "range": [25000, 150000]
+    }
+  ],
+  "constraints": [
+    { "attribute": "use_case", "prompt": "Enter use case (student/gaming/professional/any)", "filter_op": "==", "input_type": "string" },
+    { "attribute": "price", "prompt": "Enter maximum budget (INR)", "filter_op": "<=", "input_type": "numeric" },
+    { "attribute": "ram_gb", "prompt": "Enter minimum RAM needed (GB, or 0 for any)", "filter_op": ">=", "input_type": "numeric" }
+  ]
+}

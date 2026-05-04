@@ -1,0 +1,56 @@
+{
+  "category": "laptop",
+  "last_updated": "2026-05-04",
+  "products": [
+    {
+      "id": "lap_001",
+      "name": "ASUS VivoBook 15 (i3/8GB/256GB)",
+      "attributes": { "use_case": "student", "ram_gb": 8, "storage_gb": 256, "display_inches": 15.6, "battery_hours": 7, "weight_kg": 1.8, "benchmark_score": 5200, "price": 35000 }
+    },
+    {
+      "id": "lap_002",
+      "name": "Acer Aspire 5 (i5/8GB/512GB)",
+      "attributes": { "use_case": "student", "ram_gb": 8, "storage_gb": 512, "display_inches": 15.6, "battery_hours": 8, "weight_kg": 1.76, "benchmark_score": 7800, "price": 45000 }
+    },
+    {
+      "id": "lap_003",
+      "name": "Lenovo IdeaPad Slim 5 (Ryzen 5/8GB/512GB)",
+      "attributes": { "use_case": "student", "ram_gb": 8, "storage_gb": 512, "display_inches": 14.0, "battery_hours": 10, "weight_kg": 1.39, "benchmark_score": 8200, "price": 48000 }
+    },
+    {
+      "id": "lap_004",
+      "name": "HP Pavilion 15 (i5/16GB/512GB)",
+      "attributes": { "use_case": "student", "ram_gb": 16, "storage_gb": 512, "display_inches": 15.6, "battery_hours": 8, "weight_kg": 1.75, "benchmark_score": 8500, "price": 55000 }
+    },
+    {
+      "id": "lap_005",
+      "name": "Dell Inspiron 15 (i5/8GB/512GB)",
+      "attributes": { "use_case": "student", "ram_gb": 8, "storage_gb": 512, "display_inches": 15.6, "battery_hours": 7, "weight_kg": 1.65, "benchmark_score": 7600, "price": 50000 }
+    },
+    {
+      "id": "lap_006",
+      "name": "MSI GF63 Thin (i5/16GB/512GB/GTX1650)",
+      "attributes": { "use_case": "gaming", "ram_gb": 16, "storage_gb": 512, "display_inches": 15.6, "battery_hours": 5, "weight_kg": 1.86, "benchmark_score": 9500, "price": 58000 }
+    },
+    {
+      "id": "lap_007",
+      "name": "HP Victus 15 (i5/16GB/512GB/RTX3050)",
+      "attributes": { "use_case": "gaming", "ram_gb": 16, "storage_gb": 512, "display_inches": 15.6, "battery_hours": 5, "weight_kg": 2.29, "benchmark_score": 11500, "price": 65000 }
+    },
+    {
+      "id": "lap_008",
+      "name": "ASUS TUF Gaming F15 (i7/16GB/1TB/RTX4050)",
+      "attributes": { "use_case": "gaming", "ram_gb": 16, "storage_gb": 1024, "display_inches": 15.6, "battery_hours": 5, "weight_kg": 2.20, "benchmark_score": 14200, "price": 85000 }
+    },
+    {
+      "id": "lap_009",
+      "name": "MacBook Air M2 (8GB/256GB)",
+      "attributes": { "use_case": "professional", "ram_gb": 8, "storage_gb": 256, "display_inches": 13.6, "battery_hours": 18, "weight_kg": 1.24, "benchmark_score": 9800, "price": 90000 }
+    },
+    {
+      "id": "lap_010",
+      "name": "Lenovo ThinkPad E14 (i5/16GB/512GB)",
+      "attributes": { "use_case": "professional", "ram_gb": 16, "storage_gb": 512, "display_inches": 14.0, "battery_hours": 12, "weight_kg": 1.59, "benchmark_score": 8800, "price": 62000 }
+    }
+  ]
+}
